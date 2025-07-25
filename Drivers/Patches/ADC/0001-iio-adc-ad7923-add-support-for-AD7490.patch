@@ -1,0 +1,104 @@
+From 66a1326a707e5afc2d065933d827a64b4eec240d Mon Sep 17 00:00:00 2001
+From: marcosandremsfilho <marcos32andre@gmail.com>
+Date: Fri, 25 Jul 2025 17:38:53 -0300
+Subject: [PATCH] iio: adc: ad7923: add support for AD7490
+
+The AD7490 is a 12-bit, 16-channel SPI ADC from Analog Devices that
+shares a compatible interface with the AD7923 family. This commit
+extends the existing AD7923 driver to support the AD7490, enabling reuse
+of the core logic with minimal changes.
+
+This driver was tested on Linux Kernel version 5.15
+---
+ drivers/iio/adc/ad7923.c | 34 +++++++++++++++++++++++++++++++---
+ 1 file changed, 31 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/iio/adc/ad7923.c b/drivers/iio/adc/ad7923.c
+index 069b561ee768..fa4dd256a281 100644
+--- a/drivers/iio/adc/ad7923.c
++++ b/drivers/iio/adc/ad7923.c
+@@ -77,7 +77,8 @@ enum ad7923_id {
+ 	AD7924,
+ 	AD7908,
+ 	AD7918,
+-	AD7928
++	AD7928,
++	AD7490
+ };
+
+ #define AD7923_V_CHAN(index, bits)					\
+@@ -119,12 +120,34 @@ const struct iio_chan_spec name ## _channels[] = { \
+ 	IIO_CHAN_SOFT_TIMESTAMP(8), \
+ }
+
++#define DECLARE_AD7490_CHANNELS(name, bits) \
++const struct iio_chan_spec name ## _channels[] = { \
++	AD7923_V_CHAN(0, bits), \
++	AD7923_V_CHAN(1, bits), \
++	AD7923_V_CHAN(2, bits), \
++	AD7923_V_CHAN(3, bits), \
++	AD7923_V_CHAN(4, bits), \
++	AD7923_V_CHAN(5, bits), \
++	AD7923_V_CHAN(6, bits), \
++	AD7923_V_CHAN(7, bits), \
++	AD7923_V_CHAN(8, bits), \
++	AD7923_V_CHAN(9, bits), \
++	AD7923_V_CHAN(10, bits), \
++	AD7923_V_CHAN(11, bits), \
++	AD7923_V_CHAN(12, bits), \
++	AD7923_V_CHAN(13, bits), \
++	AD7923_V_CHAN(14, bits), \
++	AD7923_V_CHAN(15, bits), \
++	IIO_CHAN_SOFT_TIMESTAMP(16), \
++}
++
+ static DECLARE_AD7923_CHANNELS(ad7904, 8);
+ static DECLARE_AD7923_CHANNELS(ad7914, 10);
+ static DECLARE_AD7923_CHANNELS(ad7924, 12);
+ static DECLARE_AD7908_CHANNELS(ad7908, 8);
+ static DECLARE_AD7908_CHANNELS(ad7918, 10);
+ static DECLARE_AD7908_CHANNELS(ad7928, 12);
++static DECLARE_AD7490_CHANNELS(ad7490, 12);
+
+ static const struct ad7923_chip_info ad7923_chip_info[] = {
+ 	[AD7904] = {
+@@ -151,6 +174,10 @@ static const struct ad7923_chip_info ad7923_chip_info[] = {
+ 		.channels = ad7928_channels,
+ 		.num_channels = ARRAY_SIZE(ad7928_channels),
+ 	},
++	[AD7490] = {
++		.channels = ad7490_channels,
++		.num_channels = ARRAY_SIZE(ad7490_channels),
++	},
+ };
+
+ /*
+@@ -310,8 +337,7 @@ static int ad7923_probe(struct spi_device *spi)
+ 	st = iio_priv(indio_dev);
+
+ 	st->spi = spi;
+-	st->settings = AD7923_CODING | AD7923_RANGE |
+-			AD7923_PM_MODE_WRITE(AD7923_PM_MODE_OPS);
++	st->settings = AD7923_CODING | AD7923_PM_MODE_WRITE(AD7923_PM_MODE_OPS);
+
+ 	info = &ad7923_chip_info[spi_get_device_id(spi)->driver_data];
+
+@@ -361,6 +387,7 @@ static const struct spi_device_id ad7923_id[] = {
+ 	{"ad7908", AD7908},
+ 	{"ad7918", AD7918},
+ 	{"ad7928", AD7928},
++	{"ad7490", AD7490},
+ 	{}
+ };
+ MODULE_DEVICE_TABLE(spi, ad7923_id);
+@@ -373,6 +400,7 @@ static const struct of_device_id ad7923_of_match[] = {
+ 	{ .compatible = "adi,ad7908", },
+ 	{ .compatible = "adi,ad7918", },
+ 	{ .compatible = "adi,ad7928", },
++	{ .compatible = "adi,ad7490", },
+ 	{ },
+ };
+ MODULE_DEVICE_TABLE(of, ad7923_of_match);
+--
+2.43.0
+
