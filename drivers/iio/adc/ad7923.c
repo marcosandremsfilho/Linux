@@ -78,7 +78,8 @@ enum ad7923_id {
 	AD7924,
 	AD7908,
 	AD7918,
-	AD7928
+	AD7928,
+	AD7490
 };
 
 #define AD7923_V_CHAN(index, bits)					\
@@ -121,12 +122,34 @@ const struct iio_chan_spec name ## _channels[] = { \
 	IIO_CHAN_SOFT_TIMESTAMP(8), \
 }
 
+#define DECLARE_AD7490_CHANNELS(name, bits) \
+const struct iio_chan_spec name ## _channels[] = { \
+	AD7923_V_CHAN(0, bits), \
+	AD7923_V_CHAN(1, bits), \
+	AD7923_V_CHAN(2, bits), \
+	AD7923_V_CHAN(3, bits), \
+	AD7923_V_CHAN(4, bits), \
+	AD7923_V_CHAN(5, bits), \
+	AD7923_V_CHAN(6, bits), \
+	AD7923_V_CHAN(7, bits), \
+	AD7923_V_CHAN(8, bits), \
+	AD7923_V_CHAN(9, bits), \
+	AD7923_V_CHAN(10, bits), \
+	AD7923_V_CHAN(11, bits), \
+	AD7923_V_CHAN(12, bits), \
+	AD7923_V_CHAN(13, bits), \
+	AD7923_V_CHAN(14, bits), \
+	AD7923_V_CHAN(15, bits), \
+	IIO_CHAN_SOFT_TIMESTAMP(16), \
+}
+
 static DECLARE_AD7923_CHANNELS(ad7904, 8);
 static DECLARE_AD7923_CHANNELS(ad7914, 10);
 static DECLARE_AD7923_CHANNELS(ad7924, 12);
 static DECLARE_AD7908_CHANNELS(ad7908, 8);
 static DECLARE_AD7908_CHANNELS(ad7918, 10);
 static DECLARE_AD7908_CHANNELS(ad7928, 12);
+static DECLARE_AD7490_CHANNELS(ad7490, 12);
 
 static const struct ad7923_chip_info ad7923_chip_info[] = {
 	[AD7904] = {
@@ -152,6 +175,10 @@ static const struct ad7923_chip_info ad7923_chip_info[] = {
 	[AD7928] = {
 		.channels = ad7928_channels,
 		.num_channels = ARRAY_SIZE(ad7928_channels),
+	},
+	[AD7490] = {
+		.channels = ad7490_channels,
+		.num_channels = ARRAY_SIZE(ad7490_channels),
 	},
 };
 
@@ -367,6 +394,7 @@ static const struct spi_device_id ad7923_id[] = {
 	{ "ad7908", AD7908 },
 	{ "ad7918", AD7918 },
 	{ "ad7928", AD7928 },
+	{ "ad7490", AD7490 },
 	{ }
 };
 MODULE_DEVICE_TABLE(spi, ad7923_id);
@@ -379,6 +407,7 @@ static const struct of_device_id ad7923_of_match[] = {
 	{ .compatible = "adi,ad7908", },
 	{ .compatible = "adi,ad7918", },
 	{ .compatible = "adi,ad7928", },
+	{ .compatible = "adi,ad7490", },
 	{ }
 };
 MODULE_DEVICE_TABLE(of, ad7923_of_match);
